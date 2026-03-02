@@ -8,3 +8,13 @@ INTERNAL_NOTES.md
 # OS files
 .DS_Store
 Thumbs.db
+NUL
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Pipeline (private until public release)
+pipeline/
+
+# Reference file backups
+cloud-finops/references/.backups/
