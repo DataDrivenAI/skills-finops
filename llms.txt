@@ -1,0 +1,41 @@
+# Cloud FinOps Skill - by OptimNow
+
+> Expert Cloud FinOps knowledge for AI agents. Model-agnostic: works with Claude, GPT, Gemini, or any LLM.
+
+## What this is
+
+A structured knowledge skill that gives AI agents accurate Cloud FinOps expertise.
+It covers billing mechanics, pricing models, commitment discounts, AI cost management,
+tagging governance, and optimisation patterns across AWS, Azure, GCP, and AI platforms.
+
+The skill is plain markdown - no vector database, no embedding pipeline, no retrieval
+infrastructure. Copy the files into your agent's context and it gains FinOps expertise.
+
+## Key files
+
+- SKILL.md: Entry point and domain router for Claude Code and generic agents
+- POWER.md: Entry point for Kiro IDE
+- INSTALLATION.md: 6 setup options + model-agnostic response contract
+- references/optimnow-methodology.md: Reasoning philosophy (read first on every query)
+- references/finops-for-ai.md: AI cost management, token economics, agentic patterns
+- references/finops-ai-value-management.md: AI investment governance, stage gates
+- references/finops-genai-capacity.md: Provisioned vs shared capacity, cross-provider
+- references/finops-anthropic.md: Anthropic/Claude billing and governance
+- references/finops-aws.md: AWS FinOps (EC2, CUR, Savings Plans, cost allocation)
+- references/finops-bedrock.md: AWS Bedrock billing and optimisation
+- references/finops-azure.md: Azure FinOps (reservations, policies, hybrid benefit)
+- references/finops-azure-openai.md: Azure OpenAI Service (PTUs, spillover, costs)
+- references/finops-gcp.md: GCP FinOps (Compute, BigQuery, networking)
+- references/finops-vertexai.md: GCP Vertex AI billing and optimisation
+- references/finops-tagging.md: Tagging governance and naming conventions
+- references/finops-framework.md: FinOps Foundation framework and maturity model
+- references/finops-databricks.md: Databricks cost optimisation
+- references/finops-snowflake.md: Snowflake cost optimisation
+- references/finops-oci.md: Oracle Cloud Infrastructure optimisation
+- references/greenops-cloud-carbon.md: Cloud carbon measurement and GreenOps
+
+## Built by
+
+OptimNow - https://optimnow.io
+GitHub: https://github.com/OptimNow
+License: CC BY-SA 4.0
