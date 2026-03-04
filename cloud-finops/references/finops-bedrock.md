@@ -127,7 +127,9 @@ data with application-level metrics from CloudWatch or your own instrumentation.
 ### Tagging strategy for Bedrock
 
 AWS Bedrock supports resource tagging on provisioned throughput resources. On-demand
-API calls are attributed at the account/region level.
+API calls are attributed at the account/region level - not at the individual API call
+level. This is the structural constraint that makes account separation the preferred
+allocation boundary for AI workloads.
 
 **Recommended allocation approach:**
 
@@ -137,6 +139,27 @@ API calls are attributed at the account/region level.
 | Environment separation | Separate accounts (prod/dev/staging) |
 | Workload-level unit economics | Application-level instrumentation + CloudWatch metrics |
 | Provisioned capacity attribution | Tags on provisioned throughput resources |
+
+**Key limitation:** on-demand Bedrock API calls cannot be attributed to a specific feature
+or application using tags alone. Cost Explorer shows combined Bedrock spend per account
+and model - it does not distinguish between, for example, a customer-facing chatbot and
+an internal summarisation tool sharing the same account.
+
+**Feature-level attribution approach:** use a proxy or SDK wrapper that attaches metadata
+to every API call at invocation time: feature name, user tier, environment, model version,
+and prompt template ID. Combine with CloudWatch metrics (`InputTokenCount`,
+`OutputTokenCount`) to calculate per-feature token volumes and translate them to cost.
+
+### SageMaker training job allocation
+
+SageMaker training jobs support resource tagging at job creation. Apply tags for `team`,
+`project`, `environment`, and `cost-centre` directly on the training job. These tags
+propagate to Cost Explorer and the Cost and Usage Report (CUR), enabling per-project GPU
+spend breakdowns without post-processing.
+
+Account-level separation remains the cleanest boundary for training workloads. One AWS
+account per team or product line eliminates tag compliance risk - costs flow to the right
+owner by construction, not by discipline.
 
 ### CloudWatch metrics for Bedrock
 

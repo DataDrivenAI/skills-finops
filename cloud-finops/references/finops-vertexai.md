@@ -135,8 +135,9 @@ Cloud Monitoring or your own instrumentation.
 
 ### Labels for cost allocation
 
-GCP uses resource labels for cost allocation. Vertex AI API calls can be tagged via
-request metadata.
+GCP uses resource labels for cost allocation. Vertex AI API calls support labels via
+request metadata, which propagate to BigQuery billing exports. Apply labels at the
+API call level: `feature`, `team`, `environment`.
 
 **Recommended allocation approach:**
 
@@ -146,6 +147,22 @@ request metadata.
 | Environment separation | Separate GCP projects (prod/dev/staging) |
 | Workload-level unit economics | Application instrumentation + Cloud Monitoring |
 | Provisioned capacity attribution | Labels on provisioned throughput resources |
+| Feature-level inference attribution | API call labels -> BigQuery export + Cloud Monitoring |
+
+**GCP project boundary advantage:** the GCP project is a stronger isolation mechanism
+than AWS tags or Azure resource groups. It is enforced at the infrastructure level, not
+through tag compliance. When in doubt, separate projects.
+
+**Training job attribution:** for Vertex AI training jobs, enable detailed billing
+export to BigQuery and filter on `service.description = "Vertex AI"`. Use
+`sku.description` to separate training compute charges from inference charges.
+Separate GCP projects per team make training costs directly attributable without
+post-processing.
+
+**Unit economics from labels:** combining API call labels with Cloud Monitoring metrics
+(`aiplatform.googleapis.com/prediction/online/token_count`) and application-level
+session logging enables per-feature cost calculations (e.g., cost per summarised
+contract, cost per generated email) for margin modelling as usage scales.
 
 ### Cloud Monitoring metrics for Vertex AI
 

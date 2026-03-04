@@ -26,7 +26,7 @@ domain reference that matches the query.
 
 | Query topic | Load reference |
 |---|---|
-| AI costs, LLM inference, token economics, agentic cost patterns, AI ROI | `references/finops-for-ai.md` |
+| AI costs, LLM inference, token economics, agentic cost patterns, AI ROI, AI cost allocation, GPU cost attribution, RAG harness costs | `references/finops-for-ai.md` |
 | AI investment governance, AI Investment Council, stage gates, incremental funding, AI value management, AI practice operations | `references/finops-ai-value-management.md` |
 | GenAI capacity planning, provisioned vs shared capacity, traffic shape, spillover, throughput units | `references/finops-genai-capacity.md` |
 | AWS billing, EC2 rightsizing, RIs, Savings Plans, CUR, Cost Explorer | `references/finops-aws.md` |

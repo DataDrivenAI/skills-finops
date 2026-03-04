@@ -231,7 +231,22 @@ sufficient for AI FinOps. Supplement it with Azure Monitor metrics and
 application-level instrumentation (logging token counts per request, per feature,
 per use case) to build the cost attribution layer that billing alone cannot provide.
 
+**Allocation approaches, in order of rigor:**
 
+1. Separate Azure OpenAI accounts per team or product (cleanest boundary)
+2. Separate resource groups and subscriptions with mandatory tagging
+3. Application-layer instrumentation logging token counts per request via Azure
+   Monitor or custom middleware
+
+For finer granularity - cost per user journey rather than per team - middleware logging
+token counts and feature identifiers to Application Insights provides the additional layer.
+
+**PTU unallocated capacity waste:** Provisioned Throughput Units are reserved at the
+account level and allocated to deployments. Unallocated PTUs - reserved but not assigned
+to any active deployment - generate cost with no associated output. Monitor PTU allocation
+actively; this waste is invisible unless you build a dedicated utilisation view.
+
+### Azure Monitor metrics for Azure OpenAI
 
 | Metric | Use |
 |---|---|

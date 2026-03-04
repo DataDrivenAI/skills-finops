@@ -6,6 +6,18 @@
 
 ---
 
+## AI cost management is no longer optional
+
+The State of FinOps 2026 survey (6th edition, 1,192 respondents, published February 2026)
+confirms that AI cost management has shifted from emerging concern to universal priority.
+The trajectory is striking: 31% of respondents managed AI spend in 2024, 63% in 2025,
+and 98% in 2026. AI cost management is now the #1 skillset that FinOps teams need to
+develop, and 81% of respondents are actively exploring how AI can improve FinOps
+efficiency itself. Many organisations report being asked to self-fund AI investments
+through efficiency gains - tying FinOps directly to strategic AI enablement.
+
+---
+
 ## Why AI cost signals behave differently
 <!-- ref:37b46c22605776cb -->
 
@@ -69,6 +81,94 @@ within hours.
 
 > **Implementation baseline:** Achieving visibility typically requires ~30 minutes of
 > design and ~2 hours of implementation. The barrier is lower than most teams expect.
+
+### The full AI cost surface
+<!-- ref:ai-cost-allocation-harness -->
+
+The model API invoice is the most visible AI cost. It is rarely the complete picture.
+
+In production RAG architectures, the surrounding infrastructure - referred to as the
+harness - includes every component that supports the model call but is not itself a model
+call. In observed enterprise deployments, the harness represents 40-60% of total AI
+feature cost. In RAG-heavy architectures with multi-region data pipelines, it can exceed
+inference cost.
+
+**Harness cost map:**
+
+| Cost component | Primary driver | Allocation difficulty | Attribution approach |
+|---|---|---|---|
+| Vector DB (managed) | Storage GB + read/write units | High - marketplace billing | Project isolation, app metering, virtual tagging |
+| Embedding generation | Token volume per ingestion + query | Medium | Per-request metadata logging |
+| Object storage | Corpus size, retrieval frequency | Low-Medium | Native tags + lifecycle policies |
+| GPU compute (self-hosted) | GPU-hours x instance rate | Medium | K8s labels + DCGM + OpenCost/Kubecost |
+| KV / in-memory cache | Memory GB-hours | Low | Tags + namespace isolation |
+| Data egress | Cross-region transfer volume | High - invisible in model billing | Architecture co-location + networking cost analysis |
+| Orchestration layer | Lambda/Fargate invocations, Step Functions | Low-Medium | Tags + application logging |
+| Reranking models | Token volume for secondary ranking calls | Medium | Per-request metadata logging |
+| Observability and logging | Log ingestion volume | Medium | Tiered logging strategy |
+
+**Vector database marketplace attribution:**
+Managed vector databases (Pinecone, Weaviate, Qdrant) purchased through a cloud
+marketplace consolidate into your cloud bill as a third-party line item. They do not
+carry your internal tags and do not map to a feature or team. Remediation approaches:
+
+- Project-based isolation - separate vector DB projects or tenants per team/product
+- Application-layer metering - log every query with metadata, multiply volume by unit rate
+- Virtual tagging - apply allocation rules via FinOps platform virtual dimensions
+- Self-hosting - running on Kubernetes means underlying compute carries standard tags
+
+**GPU compute attribution on Kubernetes:**
+Self-hosted models on GPU clusters (EKS, AKS, GKE) require pod-level attribution.
+Cloud billing shows the GPU node cost, not which workload consumed it.
+
+Pod labels at deployment time are the primary mechanism:
+```yaml
+labels:
+  team: nlp-team
+  product: contract-summarizer
+  environment: prod
+  cost-centre: cc-1234
+```
+
+These labels flow into Prometheus via kube-state-metrics. Combined with NVIDIA DCGM
+Exporter (GPU memory and compute utilisation per pod), attributable cost is:
+`GPU memory consumed by pod / total GPU memory x hourly node cost`
+
+The core Kubernetes limitation: GPUs are allocated as whole units. A pod requesting
+`nvidia.com/gpu: 1` gets the full physical GPU regardless of actual utilisation. NVIDIA
+MIG partitioning creates isolated GPU slices that Kubernetes schedules independently,
+reducing waste and improving allocation accuracy.
+
+| Layer | Tool |
+|---|---|
+| Node hardware labels | NVIDIA GPU Feature Discovery |
+| Pod attribution | Kubernetes labels + namespaces |
+| GPU utilisation metrics | NVIDIA DCGM Exporter + Prometheus |
+| Cost attribution | OpenCost or Kubecost |
+| GPU partitioning | NVIDIA MIG + GPU Operator |
+
+**Observability cost feedback loop:**
+Token-level logging for every AI request generates large log volumes. Cloud observability
+platforms charge by the GB for ingestion and retention. A production AI system with full
+request-level logging can generate observability costs that rival inference costs. Use
+tiered logging: always log metadata (token counts, feature identifier, latency, model
+version); log full request and response content only for sampled traffic or error cases.
+
+**Cross-provider allocation summary:**
+
+| Allocation need | AWS | Azure | GCP |
+|---|---|---|---|
+| Team / product boundary | Separate accounts | Separate subscriptions / resource groups | Separate projects |
+| Training job attribution | SageMaker tags -> CUR | AzureML resource group + tags -> Cost Management | Vertex AI project labels -> BigQuery |
+| Inference attribution | Tags on provisioned throughput + app instrumentation | Separate AOAI accounts + tags + app instrumentation | Project labels + API call labels + Cloud Monitoring |
+| Token-level unit economics | App instrumentation + CloudWatch | App instrumentation + Azure Monitor | App instrumentation + Cloud Monitoring |
+
+The common thread: native billing does not provide feature-level or user-level cost
+attribution for inference out of the box. Account and project separation handles
+team-level allocation. Application-layer instrumentation is required for feature-level
+and per-request attribution.
+
+---
 
 ### Phase 2: Establish unit economics
 
@@ -317,5 +417,7 @@ FinOps agents.
 making progress treat agent development as iterative learning, not project delivery.
 
 ---
+
+> Sources: FinOps Foundation (State of FinOps 2026), OptimNow methodology.
 
 > *Cloud FinOps Skill by [OptimNow](https://optimnow.io)  - licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).*

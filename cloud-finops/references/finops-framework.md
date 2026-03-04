@@ -182,6 +182,34 @@ for cost management tools.
 
 ---
 
+## FinOps organisational placement
+
+The State of FinOps 2026 survey (6th edition, 1,192 respondents, published February 2026)
+provides current data on how FinOps practices are structured and positioned within
+organisations.
+
+**Reporting line:** 78% of FinOps practices now report into the CTO/CIO organisation
+(up 18% vs 2023). Teams reporting to the CFO declined to 8%. Practitioners aligned with
+CTOs and CIOs indicated two to four times more influence over technology selection -
+reinforcing that FinOps is increasingly viewed as a technology capability tied to
+architecture and platform decisions, not financial reporting alone.
+
+**Team structure:** Centralized enablement remains the dominant model (60%), followed by
+hub-and-spoke (21%) which is more common in large enterprises. Team sizes remain small:
+organisations managing over $100M in cloud spend typically average 8-10 practitioners
+and 3-10 contractors.
+
+**Scope expansion:** FinOps has moved decisively beyond cloud-only cost management. 90%
+of respondents now manage SaaS (up from 65% in 2025), 64% manage licensing (up from
+49%), 57% manage private cloud, and 48% manage data centres. An emerging 28% are
+beginning to include labour costs.
+
+**Mission change:** These trends prompted the FinOps Foundation to update its mission
+from "Advancing the People who manage the Value of Cloud" to "Advancing the People who
+manage the Value of Technology."
+
+---
+
 ## Maturity Model - Detailed
 
 ### Crawl
@@ -244,5 +272,7 @@ A FinOps team that owns all decisions creates a bottleneck and removes team owne
 The FinOps function should enable distributed decision-making, not replace it.
 
 ---
+
+> Sources: FinOps Foundation (finops.org/framework, 2024 version; State of FinOps 2026).
 
 > *Cloud FinOps Skill by [OptimNow](https://optimnow.io)  - licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).*

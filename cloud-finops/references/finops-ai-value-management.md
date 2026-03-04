@@ -11,6 +11,11 @@
 
 ## Why AI complicates FinOps practice operations
 
+The State of FinOps 2026 survey confirms that AI governance is no longer optional: 98%
+of respondents now manage AI spend (up from 31% in 2024), and AI cost management is the
+#1 skillset FinOps teams need to develop. The challenge is not awareness - it is
+operational readiness.
+
 Standard FinOps practice operations  - building accountability, enabling collaboration,
 driving optimization  - face compounded challenges when AI is in scope:
 
@@ -263,5 +268,7 @@ intentional, attributed, and tied to outcomes the organization has agreed to pur
 - `finops-vertexai.md`  - GCP Vertex AI billing and cost allocation
 
 ---
+
+> Sources: FinOps Foundation AI Working Group paper, State of FinOps 2026.
 
 > *Cloud FinOps Skill by [OptimNow](https://optimnow.io)  - licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).*
