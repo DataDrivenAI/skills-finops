@@ -1,8 +1,8 @@
 # cloud-finops-skills
 
 > Built by [OptimNow](https://optimnow.io). Covers cloud financial management across
-> AWS, Azure, GCP, AI inference costs, GenAI capacity planning, and tagging governance -
-> grounded in enterprise delivery experience.
+> AWS, Azure, GCP, AI inference costs, GenAI capacity planning, SaaS asset management,
+> and tagging governance - grounded in enterprise delivery experience.
 
 [![GitHub Stars](https://img.shields.io/github/stars/OptimNow/cloud-finops-skills?style=flat)](https://github.com/OptimNow/cloud-finops-skills/stargazers)
 [![FinOps Framework](https://img.shields.io/badge/FinOps-Framework-blue)](https://www.finops.org/framework/)
@@ -71,7 +71,8 @@ The skill provides accurate, framework-aligned guidance across the following dom
   model modernisation, optimisation framework, use case economics, cost visibility
 - **GCP Vertex AI** - Gemini pricing, provisioned throughput, batch prediction, cost visibility
 - **AWS FinOps** - CUR setup, Cost Explorer, EC2 rightsizing, Reserved Instances vs
-  Savings Plans, cost allocation, SCPs, and AWS-native quick wins
+  Savings Plans, Enterprise Discount Program (EDP) negotiation, RDS cost management,
+  multi-organisation billing, cost allocation, SCPs, and AWS-native quick wins
 - **Azure FinOps** - Azure Cost Management, Reservations, Azure Policy, FinOps Toolkit,
   Azure Hybrid Benefit, and Azure-specific optimisation patterns
 - **GCP FinOps** - Compute Engine, Cloud SQL, GCS, BigQuery, networking optimisation
@@ -181,7 +182,9 @@ provider-specific behaviour.
 - "We have $80K/month in EC2. Should we buy Reserved Instances or Savings Plans?"
 - "How do I set up CUR for multi-account cost allocation?"
 - "What are the quick wins I should address before any commitment purchase?"
-- "How do I enforce mandatory tags without breaking existing deployments?"
+- "We're approaching $2M annual AWS spend - should we negotiate an EDP and what should we watch out for?"
+- "Our RDS costs keep climbing - what's the right optimisation sequence?"
+- "How do custom billing views work across multiple AWS organisations?"
 
 ### Azure FinOps
 
@@ -258,7 +261,8 @@ management is moving particularly fast - new model releases, capacity options, a
 billing mechanics appear every few weeks.
 
 Watch or star this repo to be notified when new content is added. Recent additions
-include GreenOps/cloud carbon, AI value management, and GenAI capacity planning.
+include AWS EDP negotiation, RDS cost management, context-length pricing anti-patterns,
+SaaS asset management (SAM), GreenOps/cloud carbon, and AI value management.
 
 ---
 
