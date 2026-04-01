@@ -51,6 +51,25 @@ keywords:
   - sam
   - smp
   - saas renewal
+  - itam
+  - it asset management
+  - byol
+  - bring your own licence
+  - marketplace governance
+  - licence compliance
+  - entitlement management
+  - vendor negotiation
+  - consumption overage
+  - cursor cost
+  - cursor pricing
+  - copilot cost
+  - windsurf cost
+  - claude code cost
+  - codex cost
+  - ai coding tools
+  - ai dev tools
+  - litellm
+  - developer tool spend
 ---
 
 # Cloud FinOps - Expert Guidance
@@ -90,9 +109,11 @@ philosophy applied to all responses. Then load the domain reference that matches
 | FinOps framework, maturity model, phases, capabilities, personas | `references/finops-framework.md` |
 | Databricks clusters, jobs, Spark optimization, Unity Catalog costs | `references/finops-databricks.md` |
 | Snowflake warehouses, query optimization, storage, credits | `references/finops-snowflake.md` |
+| AI coding tools, Cursor costs, Claude Code costs, Copilot costs, Windsurf costs, Codex costs, dev tool FinOps, BYOK coding agents, LiteLLM proxy | `references/finops-ai-dev-tools.md` |
 | OCI compute, storage, networking optimization | `references/finops-oci.md` |
 | GreenOps, cloud carbon, sustainability, carbon-aware workloads | `references/greenops-cloud-carbon.md` |
 | SaaS management, license optimization, shadow IT, SaaS sprawl, renewal governance, SMP, SAM | `references/finops-sam.md` |
+| ITAM, IT asset management, BYOL, marketplace channel governance, licence compliance, vendor negotiation, FinOps-ITAM collaboration, entitlement management, consumption-based SaaS overages | `references/finops-itam.md` |
 | Multi-domain query | Load all relevant references, synthesize |
 
 ### Reasoning sequence (apply to every response)

@@ -4,10 +4,11 @@ description: >
   Expert Cloud FinOps guidance covering AI cost management, GenAI capacity planning,
   Anthropic billing, AWS (EC2, Bedrock, Savings Plans, CUR), Azure (reservations,
   OpenAI PTUs, Cost Management), GCP (Vertex AI, Compute Engine, BigQuery), tagging
-  governance, SaaS management (SAM, license optimization, SMPs, shadow IT), Databricks,
-  Snowflake, OCI, GreenOps, and FinOps framework implementation. Use for any query about
-  cloud cost, AI workload economics, commitment discounts, rightsizing, cost allocation,
-  SaaS sprawl, or connecting cloud spend to business value. Built by OptimNow.
+  governance, SaaS management (SAM, license optimization, SMPs, shadow IT), AI coding
+  tools (Cursor, Claude Code, Copilot, Windsurf, Codex), Databricks, Snowflake, OCI,
+  GreenOps, and FinOps framework implementation. Use for any query about cloud cost,
+  AI workload economics, commitment discounts, rightsizing, cost allocation, SaaS sprawl,
+  AI dev tool spend, or connecting cloud spend to business value. Built by OptimNow.
 ---
 
 # Cloud FinOps - Expert Guidance
@@ -40,9 +41,11 @@ domain reference that matches the query.
 | FinOps framework, maturity model, phases, capabilities, personas | `references/finops-framework.md` |
 | Databricks clusters, jobs, Spark optimization, Unity Catalog costs | `references/finops-databricks.md` |
 | Snowflake warehouses, query optimization, storage, credits | `references/finops-snowflake.md` |
+| AI coding tools, Cursor costs, Claude Code costs, Copilot costs, Windsurf costs, Codex costs, dev tool FinOps, seat + usage billing, BYOK coding agents, LiteLLM proxy | `references/finops-ai-dev-tools.md` |
 | OCI compute, storage, networking optimization | `references/finops-oci.md` |
 | GreenOps, cloud carbon, sustainability, carbon-aware workloads | `references/greenops-cloud-carbon.md` |
 | SaaS management, license optimization, shadow IT, SaaS sprawl, renewal governance, SMP, SAM | `references/finops-sam.md` |
+| ITAM, IT asset management, BYOL, marketplace channel governance, licence compliance, vendor negotiation, FinOps-ITAM collaboration, entitlement management, consumption-based SaaS overages | `references/finops-itam.md` |
 | Multi-domain query | Load all relevant references, synthesize |
 
 ### Reasoning sequence (apply to every response)
@@ -128,8 +131,10 @@ premature - they will commit to waste.
 | `finops-framework.md` | Full FinOps Foundation framework: 22 capabilities, personas, domains | ~350 |
 | `finops-databricks.md` | Databricks optimization: 18 patterns for clusters, jobs, Spark, storage | ~180 |
 | `finops-snowflake.md` | Snowflake optimization: 13 patterns for warehouses, queries, storage, credits | ~130 |
+| `finops-ai-dev-tools.md` | AI coding tools: Cursor, Claude Code, Copilot, Windsurf, Codex billing models, cost attribution, optimisation levers | ~400 |
 | `finops-oci.md` | OCI optimization: 6 patterns for compute, storage, networking | ~70 |
 | `finops-sam.md` | SaaS asset management: discovery, license optimization, renewal governance, SMPs, shadow IT, AI transition | ~290 |
+| `finops-itam.md` | FinOps-ITAM collaboration: BYOL mechanics, marketplace channel governance, vendor co-management, consumption monitoring, joint operating model | ~325 |
 | `greenops-cloud-carbon.md` | GreenOps: carbon measurement, carbon-aware workloads, region selection, GHG Protocol | ~150 |
 
 ---

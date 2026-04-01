@@ -5,6 +5,71 @@
 
 ---
 
+## Snowflake FinOps fundamentals
+
+Snowflake differs from IaaS providers (AWS, Azure, GCP) in ways that require a distinct FinOps approach. Understanding the model before optimizing it is essential.
+
+### The credit abstraction
+
+Snowflake does not bill for vCPUs or instance-hours directly. It bills in **Snowflake credits**, which are an abstraction layer over actual compute. The dollar value of a credit depends on your edition (Standard, Enterprise, Business Critical) and cloud region. This indirection complicates cost attribution: you cannot map spend directly to infrastructure resources the way you would with EC2 or Compute Engine.
+
+### Compute and storage are architecturally separated
+
+Multiple virtual warehouses (VWH) can read the same storage simultaneously. This is a core Snowflake design principle, not a configuration option. The FinOps consequence: warehouse proliferation is structurally incentivized — teams create dedicated warehouses to simplify chargebacks, which produces a fleet of chronically underutilized warehouses. On AWS you oversize one instance; on Snowflake you oversize per warehouse, per team, per workload.
+
+### 60-second billing minimum
+
+Warehouses bill per second, but with a 60-second minimum on every cold start. A warehouse that suspends and restarts frequently for short queries can cost more than one that runs continuously. This is counter-intuitive and has no direct equivalent in IaaS billing models (except AWS Lambda to a limited extent).
+
+### Hidden cost categories specific to Snowflake
+
+These cost drivers do not appear in warehouse credit consumption and are frequently overlooked:
+
+| Category | Trigger | Risk |
+|---|---|---|
+| **Time Travel storage** | High-churn tables (INSERT/UPDATE/DELETE) | Historical snapshots accumulate silently |
+| **Auto-Clustering** | Enabled on tables that change frequently | Continuous background recluster consumes credits outside warehouse billing |
+| **Snowpipe** | High-frequency ingestion of small files | Per-file overhead charge regardless of file size; 10,000 small files >> 10 equivalent large files |
+| **Search Optimization Service** | Enabled and forgotten | Ongoing storage and maintenance cost with no query benefit if access patterns change |
+| **Materialized Views** | Stale or low-usage MVs left active | Refresh costs persist even when the MV is rarely queried |
+
+### Commitment model vs. IaaS reserved capacity
+
+AWS Savings Plans and Reserved Instances commit to a compute capacity type and apply automatically against usage. Snowflake's equivalent is **pre-purchased credits** — you buy a credit pool at a volume discount. If you over-estimate consumption, unused credits are lost. There is no equivalent to a Compute Savings Plan that flexibly covers all compute workloads. Commitment sizing must be based on realistic historical consumption, not aspirational usage.
+
+### Cost attribution: roles and query logs, not tags
+
+On AWS, cost allocation relies primarily on resource tags feeding into CUR. Snowflake supports Object Tagging, but the practical attribution model is different:
+
+- **Virtual warehouses** are the primary cost boundary — who uses which warehouse defines the cost center split
+- **ACCOUNT_USAGE.QUERY_HISTORY** is the primary data source for tracing which user, role, or BI tool consumed what
+- **Resource Monitors** are the governance mechanism for setting credit budgets per warehouse
+
+FinOps practitioners coming from AWS instinctively look for tags. On Snowflake, the answer is in the access model and query logs. Tagging governance is still relevant for storage objects, but it is not the primary attribution mechanism.
+
+### IaaS vs. Snowflake FinOps comparison
+
+| Dimension | AWS IaaS | Snowflake |
+|---|---|---|
+| Cost unit | $ / resource | Snowflake credits |
+| Compute model | Always provisioned | Elastic, billed on activity |
+| Hidden costs | Networking, EBS snapshots | Time Travel, Auto-Clustering, Snowpipe, MV refresh |
+| Commitment mechanism | RIs / Savings Plans | Pre-purchased credit pools |
+| Cost attribution | Tags on resources → CUR | Warehouses + roles + QUERY_HISTORY |
+| Budget governance | AWS Budgets + tag policies | Resource Monitors per warehouse |
+
+### Key diagnostic questions for a new Snowflake account
+
+1. How many virtual warehouses exist, and what is the average utilization of each?
+2. What is the auto-suspend setting per warehouse, and is it appropriate for the workload type?
+3. Which tables have Auto-Clustering enabled, and what is their churn rate?
+4. What is the Time Travel retention period per table or schema?
+5. Is Snowpipe ingesting small files at high frequency?
+6. Are there pre-purchased credits, and what is the burn rate vs. the commitment expiry?
+7. How is cost attributed today — by warehouse, by role, or not at all?
+
+---
+
 ## Compute Optimization Patterns (5)
 
 **Inefficient Execution Of Repeated Queries**
