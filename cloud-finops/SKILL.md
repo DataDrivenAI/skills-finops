@@ -120,9 +120,9 @@ premature - they will commit to waste.
 | `finops-for-ai.md` | AI cost management, LLM economics, agentic patterns, ROI framework | ~400 |
 | `finops-ai-value-management.md` | AI investment governance: AI Investment Council, stage gates, incremental funding, practice operations, value metrics | ~265 |
 | `finops-genai-capacity.md` | GenAI capacity models: provisioned vs shared, traffic shape, spillover, waste types, cross-provider comparison | ~220 |
-| `finops-aws.md` | AWS FinOps + 128 optimization patterns: CUR, Cost Explorer, EC2, RIs, Savings Plans, EDP negotiation, RDS strategy, waste detection | ~1730 |
+| `finops-aws.md` | AWS FinOps + 128 optimization patterns: CUR, Cost Explorer, EC2, RIs, Savings Plans, EDP negotiation, RDS strategy, database commitment decision tree, waste detection | ~1860 |
 | `finops-bedrock.md` | AWS Bedrock billing: model pricing, provisioned throughput, batch inference, CloudWatch metrics, cost allocation | ~200 |
-| `finops-azure.md` | Azure FinOps + 48 optimization patterns: reservations, Advisor, AHB, EA-to-MCA transition, waste detection | ~1070 |
+| `finops-azure.md` | Azure FinOps + 48 optimization patterns: reservations, Savings Plans, AHB, compute/database commitment decision trees, portfolio liquidity, EA-to-MCA transition, waste detection | ~1530 |
 | `finops-azure-openai.md` | Azure OpenAI Service: PTU reservations, spillover, GPT model pricing, prompt caching, fine-tuning costs | ~260 |
 | `finops-anthropic.md` | Anthropic billing: Claude Opus/Sonnet/Haiku pricing, Fast mode, long-context cliffs, prompt caching, Batch API, governance | ~175 |
 | `finops-gcp.md` | GCP optimization: 26 patterns across Compute Engine, Cloud SQL, GCS, networking | ~260 |
