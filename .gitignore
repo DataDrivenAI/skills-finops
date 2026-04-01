@@ -21,3 +21,6 @@ cloud-finops/references/.backups/
 
 # Distribution archive
 cloud-finops.zip
+
+# LinkedIn post drafts
+linkedin-post-*.md

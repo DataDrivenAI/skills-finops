@@ -63,19 +63,24 @@ with KQL queries. Use it for:
 
 ### Azure Reservations vs Azure Savings Plans
 
-| Dimension | Azure Reservations | Azure Savings Plans for Compute |
-|---|---|---|
-| Flexibility | Low - locked to specific VM family/region | High - applies across VM families and regions |
-| Discount depth | Higher (up to 72% for some VM families) | Lower but broader coverage |
-| Coverage scope | Specific resource type | Compute (VMs, Dedicated Hosts) |
-| Best for | Stable workloads with known VM types | Variable workloads, mixed VM families |
+| Dimension | Azure Reservations | Azure Savings Plans for Compute | Azure Savings Plans for Databases |
+|---|---|---|---|
+| Flexibility | Low - locked to specific VM family/region | High - applies across VM families and regions | High - applies across database services and regions |
+| Discount depth | Higher (up to 72% for some VM families) | Lower but broader coverage | Up to 35% vs PAYG (varies by service, March 2026 pricing) |
+| Commitment model | Capacity-based (specific SKU) | Spend-based ($/hr) | Spend-based ($/hr) |
+| Coverage scope | Specific resource type | Compute (VMs, Dedicated Hosts) | Database services (SQL DB, PostgreSQL, MySQL, Cosmos DB, SQL MI, MariaDB) |
+| Term options | 1 or 3 years | 1 or 3 years | 1 year only |
+| Best for | Stable workloads with known VM types | Variable workloads, mixed VM families | Evolving database estates, multi-service or multi-region DB workloads |
 
 **Decision framework:**
 1. Analyze 90+ days of historical usage - identify truly steady-state workloads
-2. For workloads with stable VM types: evaluate Reservations (highest discount)
-3. For workloads with variable types or mixed compute: Azure Savings Plans
-4. Layer commitments: Savings Plans first (broadest coverage), then RIs for specific
-   high-stability workloads
+2. For compute with stable VM types: evaluate Reservations (highest discount)
+3. For compute with variable types or mixed families: Savings Plans for Compute
+4. For database workloads across multiple services or regions: Savings Plans for Databases
+5. For stable, single-service database workloads: compare Reservations vs Savings Plans for Databases -
+   Reservations may offer deeper discounts but lock to a specific service and configuration
+6. Layer commitments: Savings Plans first (broadest coverage), then RIs for specific
+   high-stability workloads. For databases, layer DB Savings Plans before service-specific RIs
 
 **Key metrics (same as AWS):**
 - **Utilization:** Target >80%. Below this, you are paying for unused commitment.
@@ -112,6 +117,58 @@ For fault-tolerant, interruptible workloads, Spot offers up to 90% discount over
 
 **Key constraint:** 30-second eviction notice, no SLA guarantees. Start with 20-30% spot
 allocation in non-production, increase based on stability observations.
+
+### Microsoft Azure Consumption Commitment (MACC)
+
+A MACC is a contractual agreement to spend a defined dollar amount on Azure services over
+a set period, typically one to three years. In exchange, Microsoft offers tiered discounts -
+the higher the commitment, the better the terms.
+
+**Critical distinction:** A MACC is a binding obligation, not a forecast. If actual
+consumption falls short of the committed amount by the end of the term, Microsoft issues a
+shortfall invoice. The discount negotiated becomes an additional cost if the target is missed.
+
+**The optimisation paradox**
+
+The MACC is typically sized based on current architecture and projected growth. When a FinOps
+team then rightsizes VMs, decommissions idle resources, and applies Reservations or Savings
+Plans, every dollar saved through optimisation is a dollar that does not draw down against the
+MACC. The burndown rate - how fast actual spend reduces the remaining commitment balance -
+starts to lag. If the gap is significant, the final quarter becomes a scramble to close it.
+
+This is the core tension: the MACC and the FinOps programme can quietly stop working in the
+same direction unless burndown tracking is integrated into optimisation reporting.
+
+**What counts toward MACC drawdown:**
+- Core Azure services consumed under the enrollment
+- Azure Reservations for compute
+- Azure Marketplace purchases carrying the "Azure benefit eligible" badge, transacted through
+  the Azure portal under a subscription tied to the enrollment
+
+**What does not count:**
+- Marketplace purchases made by credit card directly on the Marketplace website (the purchase
+  path matters even for eligible products)
+- Hybrid licensing applied to on-premises workloads
+- Azure Prepayment credits used to fund Marketplace purchases (billing mechanics separate
+  these from MACC consumption, even though it feels like they should count)
+
+**Reporting pitfall:** Azure Cost Management surfaces both actual cost and amortised cost
+views. They produce different burndown numbers. Actual cost reflects when charges are billed.
+Amortised cost spreads upfront Reservation purchases across the coverage term. Without a fixed
+internal standard for which view to use - applied consistently in what gets shared with
+Microsoft - the commitment can appear ahead or behind depending on who pulls the number.
+
+**Operational guidance:**
+- Include MACC burndown rate in FinOps reporting alongside ESR (Effective Savings Rate) and
+  commitment coverage. When burndown slows while ESR improves, that is the signal to act
+- Review required monthly burn rate alongside optimisation metrics in the same session
+- Keep procurement and FinOps in the same cadence review at least quarterly
+- Maintain a forward-looking list of planned software purchases with MACC eligibility confirmed
+  in advance, and pace them to support the burndown trajectory
+- Confirm Marketplace eligibility at planning time, not at purchase time
+- Do not treat Marketplace as a mechanism for spending toward a target - purchases made
+  primarily because they count create vendor relationships, licensing costs, and integration
+  work that were never in the original business case
 
 ---
 
@@ -246,6 +303,40 @@ logical server, region, subscription.
 - Auto-restart after 7 days (PostgreSQL) or 30 days (MySQL) if not manually started
 - HA must be disabled for start/stop to work
 - Ideal for dev/test environments
+
+### Savings Plan for Databases (announced March 2026)
+
+A spend-based commitment discount for eligible database services. Customers commit to a
+fixed hourly spend (e.g. $5/hr) for one year and receive discounted prices - up to 35%
+vs PAYG on select services. The plan applies savings automatically each hour, prioritising
+the usage that delivers the greatest discount first, across services and regions.
+
+**Eligible services:** Azure SQL Database, Azure Database for PostgreSQL, Azure Database
+for MySQL, Azure Cosmos DB, Azure SQL Managed Instance, Azure Database for MariaDB.
+
+**Important caveat:** SQL Server on Azure VMs and SQL Server enabled by Azure Arc also
+consume the plan's hourly commitment, but at normal PAYG rates (no discount). If these
+workloads are in the mix, they reduce the effective savings from the plan. Factor this
+into sizing the hourly commitment.
+
+**Scoping:** Subscription, resource group, management group, or entire billing account.
+
+**Purchase options:** Monthly or upfront payment, optional auto-renewal. Personalised
+recommendations available in Azure Advisor and the Azure portal.
+
+**When to use vs Reservations:**
+- Choose Savings Plan for Databases when the database estate spans multiple services or
+  regions, or when architecture changes (migrations, service swaps) are expected during
+  the commitment period.
+- Choose Reservations when a single database service runs stably in a fixed configuration
+  and the deeper RI discount outweighs the flexibility benefit.
+- Layer both: use the Savings Plan for broad baseline coverage, then add RIs for the
+  most stable, high-spend database workloads.
+
+**Pricing note (March 2026):** The "up to 35%" figure is based on Azure SQL Database
+Serverless over a 1-year term. Actual discounts vary by service and usage pattern. Azure
+Pricing Calculator and pricing pages had not yet been updated at time of announcement -
+verify current rates before purchasing.
 
 ### Database architecture principles
 
@@ -1015,11 +1106,12 @@ In Azure, it’s common for public IP addresses to be created as part of virtual
 **Transactable Vs Non Transactable Confusion In Azure Marketplace**
 Service: Azure Marketplace | Type: Commitment Misalignment
 
-Azure Marketplace offers two types of listings: transactable and non-transactable. Only transactable purchases contribute toward a customer’s MACC commitment.
+Azure Marketplace offers two types of listings: transactable and non-transactable. Only transactable purchases contribute toward a customer’s MACC commitment. See the "Microsoft Azure Consumption Commitment (MACC)" section under Commitment discounts for full drawdown mechanics, including what counts and what does not.
 
 - Prefer transactable listings in Azure Marketplace whenever MACC utilization is a priority
 - Validate SKU eligibility against Microsoft’s Procurement Playbook or MACC eligibility lists
 - Standardize sourcing templates and procurement workflows to explicitly document whether the offer contributes to MACC
+- Confirm that the purchase is transacted through the Azure portal under a subscription tied to the enrollment - credit card purchases on the Marketplace website do not count toward MACC even for eligible products
 
 **Lifecycle Visibility Gaps Inflating Renewal Costs In Azure Marketplace**
 Service: Azure Marketplace | Type: Contract Lifecycle Mismanagement

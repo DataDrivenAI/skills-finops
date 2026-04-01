@@ -81,10 +81,16 @@ The skill provides accurate, framework-aligned guidance across the following dom
 - **FinOps Framework** - full FinOps Foundation framework, 22 capabilities, maturity model
 - **Databricks** - cluster optimisation, jobs, Spark, Unity Catalog costs
 - **Snowflake** - warehouse optimisation, query tuning, storage, credits
+- **AI coding tools** - Cursor, Claude Code, Copilot, Windsurf, Codex billing models,
+  cost attribution with LiteLLM proxy, seat + usage vs BYOK architecture comparison,
+  optimisation levers, cross-tool spend overlap audit
 - **OCI** - compute, storage, networking optimisation
 - **SaaS asset management (SAM)** - SaaS discovery, license optimization, renewal
   governance, SaaS Management Platforms (SMPs), shadow IT detection, sprawl patterns,
   and the connection to AI transition readiness
+- **ITAM collaboration** - FinOps-ITAM joint operating model, BYOL cost mechanics,
+  marketplace channel governance, Tier 1 vendor co-management, consumption-based SaaS
+  overage monitoring, entitlement integration, and maturity framework
 - **GreenOps and cloud carbon** - carbon measurement tooling, FinOps-to-GreenOps
   integration, carbon-aware workload shifting, region selection, GHG Protocol reporting
 
@@ -236,8 +242,10 @@ cloud-finops-skills/
         ├── finops-framework.md                 ← Full FinOps Foundation framework
         ├── finops-databricks.md                ← Databricks optimisation
         ├── finops-snowflake.md                 ← Snowflake optimisation
+        ├── finops-ai-dev-tools.md             ← AI coding tools (Cursor, Claude Code, etc.)
         ├── finops-oci.md                       ← OCI optimisation
         ├── finops-sam.md                       ← SaaS asset management (SAM)
+        ├── finops-itam.md                     ← ITAM collaboration (BYOL, marketplace, entitlements)
         └── greenops-cloud-carbon.md            ← GreenOps and cloud carbon
 ```
 
