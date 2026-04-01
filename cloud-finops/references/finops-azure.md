@@ -389,8 +389,9 @@ exchanges early and spread them across the 12-month window.
 
 ### Phased purchasing
 
-Never buy the full commitment in a single transaction. Purchase in blocks of 10-25%
-of the target commitment to create a portfolio with staggered expiry dates.
+Never buy the full commitment in a single transaction. Purchase in blocks to create
+a portfolio with staggered expiry dates. The cadence and block size should match your
+consumption profile - not a fixed rule.
 
 **Why phased purchasing matters on Azure:**
 - **Reduces lock-in risk:** if workloads migrate or are re-architected, only the
@@ -404,7 +405,37 @@ of the target commitment to create a portfolio with staggered expiry dates.
 - **Captures pricing improvements:** newer VM generations (v5, v6) and architecture
   shifts (ARM-based Dps/Eps families) can be reflected in subsequent blocks
 
-**Phased purchasing framework:**
+**Cadence and block size by consumption profile:**
+
+The purchasing cadence should follow consumption volatility. The more variable the
+workload, the shorter the purchase cycle and the smaller each block. Your commitment
+refresh rate should be faster than your workload change rate.
+
+| Consumption profile | Examples | Cadence | Block size | Rationale |
+|---|---|---|---|---|
+| Steady, predictable | Enterprise ERP, internal tools, back-office systems | Quarterly | 20-25% | Workloads barely move quarter to quarter. Larger blocks capture deeper coverage faster. |
+| Moderate growth or gradual shifts | SaaS platforms, B2B applications, steady API services | Monthly to bi-monthly | 10-15% | Growth adds new capacity regularly. Smaller blocks incorporate new workloads without over-committing to the old baseline. |
+| Seasonal or event-driven | Retail (holiday peaks), media (live events), gaming (launches) | Monthly to weekly | 5-10% | Demand swings mean the baseline shifts frequently. Small blocks commit only to the proven floor; peaks stay on PAYG/Spot. |
+| Highly volatile or early-stage | Startups, experimental workloads, pre-product-market-fit | Weekly or do not commit | 5% or less | If you cannot predict next month, do not lock in for a year. Stay on PAYG with Spot until patterns stabilise. |
+
+**The cadence can shift over time for the same company.** A retail company might buy
+quarterly in Q1-Q3 (steady baseline) and switch to weekly in Q4 (holiday ramp) to
+avoid committing to peak capacity that evaporates in January. A SaaS company might
+start with monthly cadence during a growth phase and shift to quarterly once the
+growth rate stabilises.
+
+**Block size and cadence are inversely related:** higher frequency = smaller blocks.
+This keeps the total portfolio size similar but distributes the risk across more,
+smaller decisions.
+
+**Azure-specific consideration:** on Azure, Reservations can be exchanged mid-term,
+so organisations with moderate-frequency cadence (monthly/bi-monthly) can favour
+Reservations over Savings Plans - the exchange mechanism provides an additional
+liquidity layer on top of the staggered expiry approach. Organisations buying weekly
+may prefer Savings Plans to avoid the administrative overhead of frequent Reservation
+management.
+
+**Phased purchasing framework (quarterly example for steady consumption):**
 
 ```
 Quarter 1: Buy 20-25% of target commitment (the floor you are certain about)
@@ -425,7 +456,7 @@ Quarter 4: Evaluate whether to buy more or hold
   → Early blocks from previous year start approaching renewal
 ```
 
-**Portfolio view - staggered expiry example (1-year terms):**
+**Portfolio view - staggered expiry example (1-year terms, quarterly cadence):**
 
 | Block | Purchased | Expires | % of total | Instrument | Rationale |
 |---|---|---|---|---|---|
@@ -440,15 +471,17 @@ For 3-year commitments (deeper discounts), purchase in smaller blocks (10-15%) a
 6-month intervals. The longer the term, the smaller each block should be.
 
 **Portfolio management cadence:**
-- **Monthly:** review Reservation and Savings Plan utilisation in Azure Cost Management.
-  Flag any commitment below 80% utilisation.
-- **Quarterly:** evaluate whether to purchase the next block, review Reservation
-  exchange opportunities, and check MACC burndown trajectory.
+- **At each purchase cycle** (weekly/monthly/quarterly depending on profile): review
+  Reservation and Savings Plan utilisation in Azure Cost Management. Flag any commitment
+  below 80%. Decide whether to buy the next block, adjust the mix, or pause. Review
+  Reservation exchange opportunities on earlier blocks if workloads have shifted.
 - **At each expiry:** do not auto-renew blindly. Re-evaluate the workload: has it
   grown, shrunk, migrated, or been decommissioned? Renew only what is still justified.
   Azure Advisor provides renewal recommendations - use them as input, not as the decision.
+- **Quarterly (regardless of purchase cadence):** strategic review of commitment
+  coverage ratio, instrument mix, MACC burndown trajectory, and upcoming expiries.
 - **Annually:** review the overall commitment strategy against the organisation's Azure
-  roadmap. Adjust coverage ratio, instrument mix, and MACC alignment.
+  roadmap. Adjust coverage ratio, cadence, instrument mix, and MACC alignment.
 
 **Commitment portfolio diagnostic questions:**
 - What percentage of your commitment portfolio expires in any single quarter? If more

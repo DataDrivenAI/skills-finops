@@ -363,23 +363,46 @@ a natural rebalancing rhythm.
 
 ### Phased purchasing
 
-Never buy the full commitment in a single transaction. Purchase in blocks of 10-25%
-of the target commitment to create a portfolio of overlapping terms with staggered
-expiry dates.
+Never buy the full commitment in a single transaction. Purchase in blocks to create
+a portfolio of overlapping terms with staggered expiry dates. The cadence and block
+size should match your consumption profile - not a fixed rule.
 
 **Why phased purchasing matters:**
 - **Reduces lock-in risk:** if architecture changes mid-term, only the current block
   is at risk - not the entire commitment
 - **Creates natural re-evaluation points:** each purchase cycle forces a review of
   utilisation, workload stability, and architecture direction
-- **Smooths cash flow:** Upfront payments are spread across quarters instead of
-  concentrated in a single month
+- **Smooths cash flow:** Upfront payments are spread over time instead of concentrated
+  in a single month
 - **Enables course correction:** if utilisation drops on existing commitments, you
   can pause or reduce the next block instead of over-committing further
 - **Captures pricing improvements:** newer instance families and Graviton adoption
   can be reflected in subsequent blocks
 
-**Phased purchasing framework:**
+**Cadence and block size by consumption profile:**
+
+The purchasing cadence should follow consumption volatility. The more variable the
+workload, the shorter the purchase cycle and the smaller each block. The principle:
+your commitment refresh rate should be faster than your workload change rate.
+
+| Consumption profile | Examples | Cadence | Block size | Rationale |
+|---|---|---|---|---|
+| Steady, predictable | Enterprise ERP, internal tools, back-office systems | Quarterly | 20-25% | Workloads barely move quarter to quarter. Larger blocks capture deeper coverage faster. |
+| Moderate growth or gradual shifts | SaaS platforms, B2B applications, steady API services | Monthly to bi-monthly | 10-15% | Growth adds new capacity regularly. Smaller blocks incorporate new workloads without over-committing to the old baseline. |
+| Seasonal or event-driven | Retail (holiday peaks), media (live events), gaming (launches) | Monthly to weekly | 5-10% | Demand swings mean the baseline shifts frequently. Small blocks commit only to the proven floor; peaks stay on On-Demand/Spot. |
+| Highly volatile or early-stage | Startups, experimental workloads, pre-product-market-fit | Weekly or do not commit | 5% or less | If you cannot predict next month, do not lock in for a year. Stay on On-Demand with Spot until patterns stabilise. |
+
+**The cadence can shift over time for the same company.** A retail company might buy
+quarterly in Q1-Q3 (steady baseline) and switch to weekly in Q4 (holiday ramp) to
+avoid committing to peak capacity that evaporates in January. A SaaS company might
+start with monthly cadence during a growth phase and shift to quarterly once the
+growth rate stabilises.
+
+**Block size and cadence are inversely related:** higher frequency = smaller blocks.
+This keeps the total portfolio size similar but distributes the risk across more,
+smaller decisions.
+
+**Phased purchasing framework (quarterly example for steady consumption):**
 
 ```
 Quarter 1: Buy 20-25% of target commitment (the floor you are certain about)
@@ -400,7 +423,21 @@ Quarter 4: Evaluate whether to buy more or hold
   → Begin planning the next cycle
 ```
 
-**Portfolio view - staggered expiry example (1-year terms):**
+**Phased purchasing framework (monthly example for moderate growth):**
+
+```
+Month 1: Buy 10-12% of target (proven steady-state floor)
+  → Monitor utilisation for 2 weeks
+Month 2: Buy next 10-12% block
+  → Incorporate any new workloads that stabilised last month
+Month 3: Buy next 10-12% block
+  → Review: are earlier blocks still >80% utilised?
+Months 4-8: Continue at 10-12% per month, pausing if utilisation drops
+Month 9+: Evaluate - early blocks approaching renewal
+  → Shift to maintenance mode: renew justified blocks, drop the rest
+```
+
+**Portfolio view - staggered expiry example (1-year terms, quarterly cadence):**
 
 | Block | Purchased | Expires | % of total | Instrument |
 |---|---|---|---|---|
@@ -421,14 +458,16 @@ term, the smaller each block should be - because the risk of architecture change
 over 3 years is substantially higher than over 1 year.
 
 **Portfolio management cadence:**
-- **Monthly:** review SP/RI utilisation dashboard. Flag any commitment below 80%.
-- **Quarterly:** evaluate whether to purchase the next block, adjust the instrument
-  mix, and review upcoming expiries.
+- **At each purchase cycle** (weekly/monthly/quarterly depending on profile): review
+  SP/RI utilisation dashboard. Flag any commitment below 80%. Decide whether to buy
+  the next block, adjust the instrument mix, or pause.
 - **At each expiry:** do not auto-renew. Re-evaluate the workload: has it grown,
   shrunk, migrated to a different service, or been decommissioned? Renew only what
   is still justified.
+- **Quarterly (regardless of purchase cadence):** strategic review of commitment
+  coverage ratio, instrument mix, and upcoming expiries.
 - **Annually:** review the overall commitment strategy against the organisation's
-  cloud roadmap. Adjust the target coverage ratio and instrument mix.
+  cloud roadmap. Adjust the target coverage ratio, cadence, and instrument mix.
 
 **Common commitment mistakes:**
 - Buying commitments before right-sizing (committing to waste)
