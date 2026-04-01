@@ -61,62 +61,428 @@ with KQL queries. Use it for:
 
 ## Commitment discounts
 
-### Azure Reservations vs Azure Savings Plans
+### Compute commitment instruments
 
-| Dimension | Azure Reservations | Azure Savings Plans for Compute | Azure Savings Plans for Databases |
-|---|---|---|---|
-| Flexibility | Low - locked to specific VM family/region | High - applies across VM families and regions | High - applies across database services and regions |
-| Discount depth | Higher (up to 72% for some VM families) | Lower but broader coverage | Up to 35% vs PAYG (varies by service, March 2026 pricing) |
-| Commitment model | Capacity-based (specific SKU) | Spend-based ($/hr) | Spend-based ($/hr) |
-| Coverage scope | Specific resource type | Compute (VMs, Dedicated Hosts) | Database services (SQL DB, PostgreSQL, MySQL, Cosmos DB, SQL MI, MariaDB) |
-| Term options | 1 or 3 years | 1 or 3 years | 1 year only |
-| Best for | Stable workloads with known VM types | Variable workloads, mixed VM families | Evolving database estates, multi-service or multi-region DB workloads |
+Azure provides four distinct instruments for reducing compute costs, plus Azure Hybrid
+Benefit which acts as a licensing overlay. As with AWS, these instruments are designed
+to be layered, not chosen in isolation.
 
-**Decision framework:**
-1. Analyze 90+ days of historical usage - identify truly steady-state workloads
-2. For compute with stable VM types: evaluate Reservations (highest discount)
-3. For compute with variable types or mixed families: Savings Plans for Compute
-4. For database workloads across multiple services or regions: Savings Plans for Databases
-5. For stable, single-service database workloads: compare Reservations vs Savings Plans for Databases -
-   Reservations may offer deeper discounts but lock to a specific service and configuration
-6. Layer commitments: Savings Plans first (broadest coverage), then RIs for specific
-   high-stability workloads. For databases, layer DB Savings Plans before service-specific RIs
+**Instrument comparison:**
 
-**Key metrics (same as AWS):**
-- **Utilization:** Target >80%. Below this, you are paying for unused commitment.
-- **Coverage:** Target 70% (Walk), 80%+ (Run). Remaining on-demand is acceptable buffer.
+| Instrument | Discount depth | Flexibility | Commitment type | Term | Covers |
+|---|---|---|---|---|---|
+| Azure Reservation | Up to 72% | Lowest - locked to VM family, region, size | Capacity-based (specific SKU) | 1yr or 3yr | VMs, Dedicated Hosts, App Service (Isolated), specific services |
+| Azure Savings Plan for Compute | Up to 65% | High - any VM family, region, size | Spend-based ($/hr) | 1yr or 3yr | VMs, Dedicated Hosts, Container Instances, App Service (Premium v3 / Isolated v2) |
+| Azure Hybrid Benefit (AHB) | Up to 40% (Windows), 55% (SQL) | Highest - no commitment, no lock-in | Licensing overlay | None | VMs, SQL Database, SQL MI, Red Hat/SUSE Linux |
+| Spot Virtual Machines | Up to 90% | Variable - can be evicted with 30s notice | None (market-priced) | None | VMs, VMSS, AKS node pools |
 
-**Before purchasing any commitment:**
-- [ ] Confirm the workload has run stably for 90+ days
-- [ ] Confirm no planned architecture changes in the commitment period
-- [ ] Confirm the workload is tagged and attributable to an owner
-- [ ] **Do not commit to waste** - rightsize and shut down idle resources first, commit second
+**Critical distinctions:**
 
-### Azure Hybrid Benefit (AHB)
+1. **Azure Hybrid Benefit is not a commitment - it is free money.** If you have Windows
+   Server or SQL Server licenses with Software Assurance, AHB eliminates the license
+   component from VM pricing. No contract, no lock-in, no restart needed. This should
+   be enabled on all eligible VMs before any other commitment decision. Windows licence
+   costs can account for 44% of a Windows VM price (e.g. D4_v5 Windows at ~0.35/hr =
+   ~0.19 compute + ~0.15 licence). Use the AHB Workbook from FinOps Toolkit for
+   compliance tracking across the fleet.
 
-Organizations with existing Windows Server or SQL Server licenses (with Software Assurance)
-can apply them to Azure VMs, eliminating the license premium.
+2. **Savings Plans for Compute cover more than VMs.** Unlike Reservations (which are
+   resource-specific), Compute Savings Plans also cover Container Instances and App
+   Service Premium v3 / Isolated v2. If you run a mix of VMs, containers, and App
+   Service, a Compute Savings Plan is the only instrument that covers all three.
 
-**Why this matters:** Windows license costs can account for 44% of a Windows VM price.
-Example: D4_v5 Windows at ~0.35/hr = ~0.19 (compute) + ~0.15 (Windows license). Without
-AHB, you double-pay for licenses you already own.
+3. **Reservations offer deeper discounts but less flexibility.** A Reservation locks to
+   a specific VM family and region. If you change instance family or region mid-term, the
+   Reservation does not follow. A Savings Plan is spend-based and applies wherever it
+   finds eligible usage - but the discount is ~7% shallower than a Reservation.
 
-**AHB details:**
-- Up to 40% savings on Windows VMs, up to 55% on SQL Database
-- No architectural change, no restart needed - single CLI command per VM
-- Also applies to SQL Managed Instance and Red Hat/SUSE Linux
-- Use the AHB Workbook from FinOps Toolkit for compliance tracking across the fleet
-- **Priority: #1 quick win** - enable on all eligible VMs immediately
+4. **Azure allows Reservation exchanges and refunds - but with limits.** You can exchange
+   a Reservation for a different SKU (same or higher value) or request a pro-rated refund
+   up to $50,000 per rolling 12 months. This is significantly more liquidity than AWS
+   offers (where Savings Plans cannot be modified and Standard RIs can only be sold on
+   the marketplace). However, Microsoft has been tightening these policies - verify
+   current exchange and refund terms before relying on them for liquidity.
+
+5. **Savings Plans cannot be exchanged, cancelled, or refunded** once purchased. The
+   commitment runs for the full term. This makes phased purchasing and portfolio
+   diversification critical for Savings Plans (see "Commitment portfolio liquidity" below).
+
+6. **Spot is not a commitment** - it is a market mechanism with a 30-second eviction
+   notice and no SLA. It belongs in the compute cost strategy but should not be compared
+   directly against commitment instruments.
+
+### Compute commitment decision tree
+
+```
+START: What Azure compute service runs the workload?
+│
+├── Virtual Machines (including VMSS)
+│   │
+│   ├── Does the VM run Windows Server or SQL Server with SA licenses?
+│   │   └── YES → Enable Azure Hybrid Benefit immediately (up to 40-55%
+│   │             savings, no commitment, no restart). Then continue below
+│   │             for additional commitment discounts on top of AHB.
+│   │
+│   ├── Is the workload fault-tolerant and interruptible?
+│   │   ├── YES → Use Spot VMs (up to 90% discount)
+│   │   │         - Start with 20-30% Spot allocation in non-production
+│   │   │         - Use VMSS with Spot priority for auto-scaling pools
+│   │   │         - Implement eviction handling (30-second notice)
+│   │   │         - Good for: batch, dev/test, CI/CD, stateless tiers
+│   │   │
+│   │   └── NO → Is the workload stable and predictable (90+ days)?
+│   │       ├── NO → Stay on PAYG. Re-evaluate quarterly.
+│   │       │
+│   │       └── YES → Has it been right-sized? (see Compute rightsizing below)
+│   │           ├── NO → Right-size first. Do not commit to waste.
+│   │           │
+│   │           └── YES → Will it stay on the same VM family + region?
+│   │               ├── YES → Azure Reservation (up to 72%)
+│   │               │         Deepest discount. Can be exchanged for a
+│   │               │         different SKU if workload changes (subject
+│   │               │         to exchange policy limits).
+│   │               │
+│   │               └── NO / UNSURE → Savings Plan for Compute (up to 65%)
+│   │                     Covers any VM family and region. ~7% shallower
+│   │                     than Reservations but protects against family
+│   │                     or region changes. Cannot be exchanged or
+│   │                     refunded once purchased.
+│   │
+│   └── Special case: GPU / N-series VMs
+│       - Capacity scarcity is a primary concern (NC, ND, NV families)
+│       - Reservations may be necessary to secure capacity in constrained regions
+│       - Savings Plans do not reserve capacity - only provide pricing benefit
+│       - For ML training: consider Spot VMs with checkpointing
+│
+├── Azure Kubernetes Service (AKS)
+│   │
+│   ├── AKS node pools run on VMs → commitment applies to underlying VMs
+│   │   (use VM decision tree above for node pool instances)
+│   │
+│   ├── Spot node pools → use Spot priority for fault-tolerant pods
+│   │   - Configure pod disruption budgets for graceful eviction
+│   │   - Use taints/tolerations to isolate Spot-eligible workloads
+│   │   - Can save 60-90% on non-critical node pools
+│   │
+│   └── Consider: cluster autoscaler + right-sized node pools before committing
+│       Pod rightsizing (VPA) saves 20-40%; node pool rightsizing saves 15-30%.
+│       Commit after these optimisations are stable, not before.
+│
+├── App Service
+│   │
+│   ├── Consumption Plan → no commitment needed (pay per execution)
+│   │
+│   ├── Premium v3 / Isolated v2 → Savings Plan for Compute applies
+│   │   - Only relevant if App Service spend is significant (>$2K/month)
+│   │   - Reservations also available for Isolated tier
+│   │
+│   └── Legacy plans (V2) → migrate to V3 first for better price-performance,
+│       then evaluate commitment on the new tier
+│
+├── Azure Functions
+│   │
+│   ├── Consumption Plan → pay per execution, no commitment available
+│   │   - Focus on optimising execution duration and memory allocation
+│   │
+│   ├── Premium Plan → runs on App Service infrastructure
+│   │   Savings Plan for Compute applies. But first: does the workload
+│   │   actually need Premium? Move non-critical functions to Consumption
+│   │   Plan before committing to Premium.
+│   │
+│   └── Dedicated (App Service Plan) → same as App Service above
+│
+├── Container Instances
+│   │
+│   └── Savings Plan for Compute covers Container Instances
+│       - Only worth committing if usage is sustained and predictable
+│       - For short-lived or burst containers, PAYG is usually cheaper
+│
+└── Azure Databricks
+    │
+    └── Databricks has its own commitment model (DBCU pre-purchase)
+        - Separate from Azure Reservations and Savings Plans
+        - See finops-databricks.md for Databricks-specific guidance
+```
+
+### Savings Plan vs Reservation - detailed comparison
+
+| Dimension | Azure Reservation | Azure Savings Plan for Compute |
+|---|---|---|
+| Commitment | Specific SKU for 1yr or 3yr | $/hr spend for 1yr or 3yr |
+| Discount depth | Up to 72% | Up to 65% |
+| VM family | Locked to one family | Any family |
+| Region | Locked to one region | Any region |
+| Size | Flexible within family (instance size flexibility) | Any size |
+| Covers App Service | Isolated tier only | Premium v3 + Isolated v2 |
+| Covers Container Instances | No | Yes |
+| Exchangeable | Yes (for equal or greater value, $50K/12mo refund cap) | No |
+| Refundable | Pro-rated, up to $50K per 12 months | No |
+| Cancellable | Yes (with early termination fee) | No |
+| Payment options | Monthly or Upfront | Monthly or Upfront |
+| Scoping | Subscription, resource group, management group, shared | Subscription, resource group, management group, shared |
+
+**Key takeaway:** Reservations offer deeper discounts AND more liquidity (exchanges,
+refunds). Savings Plans offer broader coverage but zero liquidity once purchased. This
+inverts the common assumption that "flexibility = Savings Plans." For Azure specifically,
+Reservations are often the better choice when workloads are moderately stable, because
+you retain the ability to exchange if things change.
 
 ### Spot Virtual Machines
 
 For fault-tolerant, interruptible workloads, Spot offers up to 90% discount over PAYG.
 
-**Appropriate for Spot:** Batch processing, dev/test, CI/CD, stateless pods in AKS
-**Not appropriate:** Stateful databases, workloads with strict SLA requirements
+**Appropriate for Spot:** Batch processing, dev/test, CI/CD, stateless pods in AKS,
+ML training with checkpointing, scale-out processing with VMSS.
 
-**Key constraint:** 30-second eviction notice, no SLA guarantees. Start with 20-30% spot
-allocation in non-production, increase based on stability observations.
+**Not appropriate:** Stateful databases, workloads with strict SLA requirements,
+single-instance workloads with no failover.
+
+**Key constraint:** 30-second eviction notice (vs 2 minutes on AWS), no SLA guarantees.
+
+**Spot best practices:**
+- Start with 20-30% Spot allocation in non-production, increase based on stability
+- Use VMSS with Spot priority for auto-scaling pools with automatic fallback
+- Configure eviction policy: Deallocate (preserves disk) or Delete (lowest cost)
+- Set max price at PAYG rate - never bid above PAYG
+- For AKS: use Spot node pools with taints/tolerations for workload isolation
+- Monitor eviction rates by VM family and region - some combinations are more stable
+
+### Azure Hybrid Benefit (AHB)
+
+Organisations with existing Windows Server or SQL Server licenses (with Software
+Assurance) can apply them to Azure resources, eliminating the licence premium.
+
+**Why AHB is the #1 quick win:**
+- Up to 40% savings on Windows VMs, up to 55% on SQL Database
+- No architectural change, no restart needed - single CLI command per VM
+- Also applies to SQL Managed Instance and Red Hat/SUSE Linux
+- Zero commitment, zero risk, immediate effect
+- Use the AHB Workbook from FinOps Toolkit for compliance tracking across the fleet
+- **Enable on all eligible VMs before evaluating any other commitment**
+
+### Compute commitment layering strategy
+
+Azure applies discounts in a specific order. The layering sequence matters.
+
+**Discount application order (Azure-defined):**
+1. Azure Hybrid Benefit (licence overlay, applied first to eligible VMs)
+2. Spot pricing (market rate, for Spot-eligible workloads)
+3. Reservations (capacity-based, applied to matching PAYG usage)
+4. Savings Plans (spend-based, applied to remaining eligible PAYG usage)
+5. MACC discount (portfolio-wide, applied last to remaining spend)
+
+**Recommended layering approach:**
+
+```
+Layer 0: Azure Hybrid Benefit (free - no commitment, immediate)
+  ↓ eliminates licence cost on all eligible Windows/SQL VMs
+Layer 1: Spot (for interruptible workloads)
+  ↓ removes 15-40% of compute from the commitment equation
+Layer 2: Savings Plans for Compute (broad baseline)
+  ↓ covers predictable floor across VMs/App Service/Container Instances
+Layer 3: Reservations (high-stability VM workloads)
+  ↓ captures the extra ~7% discount for workloads locked to a family+region
+  ↓ retains exchange/refund liquidity if workload changes
+Layer 4: MACC (portfolio-wide, if applicable)
+  ↓ applies on top of everything above for remaining PAYG spend
+Layer 5: PAYG (variable / new workloads)
+  ↓ buffer for growth, experimentation, and workloads under evaluation
+```
+
+**Sizing the commitment - the 70/20/10 guideline:**
+- **70% of steady-state compute:** covered by Savings Plans and/or Reservations
+- **20% variable buffer:** PAYG capacity for scaling, new workloads, seasonal variation
+- **10% Spot opportunity:** fault-tolerant workloads on Spot pricing
+
+### Database commitment decision tree
+
+Azure offers two commitment instruments for database services, plus operational
+optimisations that should be applied before any commitment purchase.
+
+**Pre-commitment optimisation (do these first):**
+1. Enable Azure Hybrid Benefit on all eligible SQL Database and SQL MI instances
+2. Switch dev/test databases to SQL Serverless (auto-pause) - saves 70-90% on idle DBs
+3. Stop PostgreSQL/MySQL Flexible Servers outside business hours
+4. Consolidate small databases into Elastic Pools (20-40% savings)
+5. Review DTU vs vCore: migrate to vCore if AHB-eligible for licence savings
+6. Right-size overprovisioned compute and storage tiers
+
+**Decision tree:**
+
+```
+Is the database workload stable and predictable (90+ days)?
+├── NO → Stay on PAYG or use Serverless (auto-pause for intermittent use).
+│         Re-evaluate quarterly.
+│
+└── YES → Has the database been right-sized and optimised? (steps 1-6 above)
+    ├── NO → Optimise first, commit second. Do not lock in waste.
+    │
+    └── YES → What is the database estate profile?
+        │
+        ├── Single service, single region, stable configuration
+        │   → Azure Reservation (deeper discount than Savings Plan)
+        │     - Available for: SQL Database, Cosmos DB, PostgreSQL,
+        │       MySQL, MariaDB, SQL MI
+        │     - Exchangeable for different SKU if workload changes
+        │     - Pro-rated refund available (up to $50K/12 months)
+        │
+        ├── Multiple database services or regions
+        │   → Savings Plan for Databases (up to 35%, March 2026)
+        │     - Covers: SQL Database, PostgreSQL, MySQL, Cosmos DB,
+        │       SQL MI, MariaDB
+        │     - Applies savings across services and regions automatically
+        │     - Cannot be exchanged or refunded once purchased
+        │     - CAUTION: SQL Server on Azure VMs and Azure Arc consume
+        │       the commitment at PAYG rates (no discount) - factor
+        │       this into sizing the hourly commitment
+        │
+        ├── Mix of stable and evolving workloads
+        │   → Layer both: Savings Plan for Databases as broad baseline,
+        │     then add Reservations for the most stable, high-spend
+        │     database instances to capture deeper discounts
+        │
+        └── Cosmos DB (special case)
+            → Cosmos DB Reserved Capacity available separately
+              - 1yr or 3yr terms, significant discounts on RU/s
+              - Requires predictable throughput baseline
+              - For variable throughput: use autoscale (no commitment)
+              - Evaluate serverless for low/intermittent usage first
+```
+
+**Database commitment diagnostic questions:**
+- What percentage of your database spend is PAYG vs committed?
+- Are Azure Hybrid Benefit licences applied to all eligible SQL instances?
+- Are dev/test databases on Serverless (auto-pause) or still running 24/7?
+- Do you have SQL Server on Azure VMs that would consume a Database Savings Plan
+  at PAYG rates? If so, how much of the plan's hourly commitment would they absorb?
+- Are overprovisioned tiers (Business Critical on non-prod, RA-GRS backup storage
+  on non-critical DBs) inflating the baseline you would commit to?
+
+### Commitment portfolio liquidity
+
+Commitment liquidity - the ability to reshape, rebalance, or exit your commitment
+portfolio without wasting money - is as important as discount depth. Azure offers
+more built-in liquidity mechanisms than AWS, but each has limits.
+
+**Azure liquidity mechanisms:**
+
+| Mechanism | How it works | Applies to | Limits |
+|---|---|---|---|
+| **Reservation exchange** | Swap a Reservation for a different SKU of equal or greater value | Reservations only | Must be equal or greater value; exchanges count toward $50K refund cap |
+| **Reservation refund** | Cancel a Reservation and receive a pro-rated refund | Reservations only | $50,000 rolling 12-month cap across all refunds and exchanges |
+| **Reservation instance size flexibility** | A Reservation on one VM size covers other sizes in the same family at a normalised ratio | VM Reservations | Same VM family and region only |
+| **Staggered expiry** | Purchase commitments in phased blocks so only a fraction expires each quarter | All instruments (Reservations, Savings Plans) | Requires purchasing discipline |
+
+**Key insight:** Reservations are more liquid than Savings Plans on Azure. This is the
+opposite of the common assumption. Savings Plans offer usage flexibility (any family,
+any region) but zero financial liquidity (no exchange, no refund, no cancellation).
+Reservations lock to a specific SKU but allow exchanges, refunds, and instance size
+flexibility. When choosing between the two, factor liquidity into the decision - not
+just discount depth and coverage breadth.
+
+**The $50,000 refund cap:**
+Microsoft imposes a rolling 12-month cap of $50,000 across all Reservation refunds
+and exchanges that result in a decrease in value. For organisations with large
+Reservation portfolios, this cap can be a binding constraint. If you need to reshape
+more than $50,000 in Reservations within a year, you will hit the ceiling. Plan
+exchanges early and spread them across the 12-month window.
+
+### Phased purchasing
+
+Never buy the full commitment in a single transaction. Purchase in blocks of 10-25%
+of the target commitment to create a portfolio with staggered expiry dates.
+
+**Why phased purchasing matters on Azure:**
+- **Reduces lock-in risk:** if workloads migrate or are re-architected, only the
+  current block is at risk
+- **Creates natural re-evaluation points:** each purchase cycle forces a review of
+  utilisation, Advisor recommendations, and architecture direction
+- **Preserves refund/exchange headroom:** spreading purchases means smaller individual
+  Reservations, making it easier to stay within the $50K refund cap if changes are needed
+- **Aligns with MACC cadence:** phased purchasing can be timed to support MACC burndown
+  trajectory, avoiding end-of-period scrambles
+- **Captures pricing improvements:** newer VM generations (v5, v6) and architecture
+  shifts (ARM-based Dps/Eps families) can be reflected in subsequent blocks
+
+**Phased purchasing framework:**
+
+```
+Quarter 1: Buy 20-25% of target commitment (the floor you are certain about)
+  → Monitor utilisation for 30 days via Azure Advisor and Cost Management
+  → If utilisation >80%: proceed to next block
+  → If utilisation <80%: investigate before buying more
+
+Quarter 2: Buy next 15-20% block
+  → Reassess workload stability and architecture plans
+  → Review Reservation exchange opportunities on earlier blocks if workloads shifted
+
+Quarter 3: Buy next 15-20% block
+  → By now 50-65% of target is covered
+  → Remaining gap is intentional PAYG buffer
+
+Quarter 4: Evaluate whether to buy more or hold
+  → Factor MACC burndown position into the decision
+  → Early blocks from previous year start approaching renewal
+```
+
+**Portfolio view - staggered expiry example (1-year terms):**
+
+| Block | Purchased | Expires | % of total | Instrument | Rationale |
+|---|---|---|---|---|---|
+| Block 1 | Jan 2026 | Jan 2027 | 25% | Compute Savings Plan | Broad baseline across VMs + App Service |
+| Block 2 | Apr 2026 | Apr 2027 | 20% | VM Reservations (D-series) | Stable production VMs, deepest discount |
+| Block 3 | Jul 2026 | Jul 2027 | 15% | VM Reservations (E-series) | Memory-optimised database VMs |
+| Block 4 | Oct 2026 | Oct 2027 | 10% | DB Savings Plan | Database baseline across SQL + PostgreSQL |
+| PAYG | - | - | 30% | None | Buffer for variable / new workloads |
+
+**3-year term phasing:**
+For 3-year commitments (deeper discounts), purchase in smaller blocks (10-15%) at
+6-month intervals. The longer the term, the smaller each block should be.
+
+**Portfolio management cadence:**
+- **Monthly:** review Reservation and Savings Plan utilisation in Azure Cost Management.
+  Flag any commitment below 80% utilisation.
+- **Quarterly:** evaluate whether to purchase the next block, review Reservation
+  exchange opportunities, and check MACC burndown trajectory.
+- **At each expiry:** do not auto-renew blindly. Re-evaluate the workload: has it
+  grown, shrunk, migrated, or been decommissioned? Renew only what is still justified.
+  Azure Advisor provides renewal recommendations - use them as input, not as the decision.
+- **Annually:** review the overall commitment strategy against the organisation's Azure
+  roadmap. Adjust coverage ratio, instrument mix, and MACC alignment.
+
+**Commitment portfolio diagnostic questions:**
+- What percentage of your commitment portfolio expires in any single quarter? If more
+  than 30%, the portfolio is insufficiently diversified.
+- Are you buying commitments in phased blocks with staggered expiry, or purchasing the
+  full amount in a single transaction?
+- How much of your $50,000 Reservation refund/exchange cap have you used in the last
+  12 months? If you are close to the cap, you have less room to reshape the portfolio.
+- Are Savings Plans covering workloads that are stable enough for Reservations (leaving
+  ~7% discount on the table)?
+- Is MACC burndown tracking integrated into the same review cadence as commitment
+  purchasing? If not, optimisation gains may create a MACC shortfall risk.
+- Are engineering teams planning VM family migrations (e.g. to ARM-based Dps/Eps) that
+  would strand existing Reservations? If so, favour Savings Plans for those workloads
+  or plan Reservation exchanges in advance.
+
+**Key metrics:**
+- **Reservation/SP Utilisation:** Target >80%. Below this, the commitment is oversized.
+- **Reservation/SP Coverage:** Target 70% (Walk maturity), 80%+ (Run maturity).
+- **Effective Savings Rate:** actual savings / theoretical maximum. Measures how well
+  commitments are matched to real usage.
+- **Break-even period:** should be <9 months for 1-year terms, <15 months for 3-year.
+- **Commitment waste:** hours where committed capacity had no matching usage.
+- **Exchange headroom:** remaining $ available under the $50K/12-month refund cap.
+
+**Pre-purchase checklist:**
+- [ ] Azure Hybrid Benefit enabled on all eligible VMs and SQL instances
+- [ ] Workload has run stably for 90+ days
+- [ ] Workload has been right-sized (do not commit to waste)
+- [ ] No planned architecture changes during the commitment term
+- [ ] All resources are tagged and attributable to an owner
+- [ ] Existing commitment utilisation is >80% before purchasing more
+- [ ] MACC burndown trajectory reviewed - commitment purchase aligns with drawdown
+- [ ] Finance has approved the capital outlay (for Upfront payments)
 
 ### Microsoft Azure Consumption Commitment (MACC)
 
