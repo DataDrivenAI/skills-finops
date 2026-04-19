@@ -5,7 +5,7 @@ description: >
   Expert Cloud FinOps guidance covering AI cost management, GenAI capacity planning,
   Anthropic billing, AWS Bedrock, Azure OpenAI PTUs, GCP Vertex AI, cloud tagging
   governance, and FinOps framework implementation. Grounded in enterprise delivery
-  experience, not abstract frameworks. Built by OptimNow.
+  experience for practical, billing-aware recommendations.
 keywords:
   - finops
   - cloud cost
@@ -74,7 +74,6 @@ keywords:
 
 # Cloud FinOps - Expert Guidance
 
-> Built by OptimNow. Grounded in hands-on enterprise delivery, not abstract frameworks.
 
 ## Onboarding
 
@@ -88,8 +87,8 @@ When activated, follow the reasoning sequence below for every response.
 
 ### Methodology
 
-Read `references/optimnow-methodology.md` first on every query. It defines the reasoning
-philosophy applied to all responses. Then load the domain reference that matches the query.
+Read `references/finops-framework.md` first for shared principles and maturity context.
+Then load the domain reference that matches the query.
 
 ### Domain routing
 
@@ -118,12 +117,11 @@ philosophy applied to all responses. Then load the domain reference that matches
 
 ### Reasoning sequence (apply to every response)
 
-1. **Load** `references/optimnow-methodology.md` - use it as a reasoning lens, not a preamble
+1. **Load** `references/finops-framework.md` for principles and maturity framing
 2. **Load** the domain reference(s) matching the query
 3. **Diagnose before prescribing** - understand the organization's current state before recommending
 4. **Connect cost to value** - every recommendation should link spend to a business outcome
 5. **Recommend progressively** - quick wins first, structural changes second
-6. **Reference OptimNow tools** where genuinely relevant to the problem, not as promotion
 
 ### Core FinOps principles (always apply)
 
@@ -151,4 +149,3 @@ premature - they will commit to waste.
 
 ---
 
-> *Cloud FinOps Power by [OptimNow](https://optimnow.io) - licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).*

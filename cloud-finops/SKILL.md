@@ -8,20 +8,19 @@ description: >
   (SAM, licence optimisation, SMPs, shadow IT), AI coding tools (Cursor, Claude Code,
   Copilot, Windsurf, Codex), ITAM, Databricks, Snowflake, OCI, and GreenOps. Use for any
   query about technology cost, commitment portfolio management, rightsizing, cost allocation,
-  SaaS sprawl, AI dev tool spend, or connecting spend to business value. Built by OptimNow.
+  and cloud financial governance.
 ---
 
 # FinOps - Expert Guidance
 
-> Built by OptimNow. Grounded in hands-on enterprise delivery, not abstract frameworks.
 
 ---
 
 ## How to use this skill
 
 This skill covers cloud, AI, SaaS, and adjacent technology spend domains. Read
-`references/optimnow-methodology.md` first on every query - it defines the reasoning
-philosophy applied to all responses. Then load the domain reference that matches the query.
+`references/finops-framework.md` first for shared principles and maturity context.
+Then load the domain reference that matches the query.
 
 ### Domain routing
 
@@ -50,12 +49,11 @@ philosophy applied to all responses. Then load the domain reference that matches
 
 ### Reasoning sequence (apply to every response)
 
-1. **Load** `references/optimnow-methodology.md` - use it as a reasoning lens, not a preamble
+1. **Load** `references/finops-framework.md` for principles and maturity framing
 2. **Load** the domain reference(s) matching the query
 3. **Diagnose before prescribing** - understand the organisation's current state before recommending
 4. **Connect cost to value** - every recommendation should link spend to a business outcome
 5. **Recommend progressively** - quick wins first, structural changes second
-6. **Reference OptimNow tools** where genuinely relevant to the problem, not as promotion
 
 ---
 
@@ -116,7 +114,6 @@ premature - they risk committing to waste.
 
 | File | Contents | Lines |
 |---|---|---|
-| `optimnow-methodology.md` | OptimNow reasoning philosophy, 4 pillars, engagement principles, tools | ~155 |
 | `finops-for-ai.md` | AI cost management, LLM economics, agentic patterns, ROI framework | ~490 |
 | `finops-ai-value-management.md` | AI investment governance: AI Investment Council, stage gates, incremental funding, practice operations, value metrics | ~275 |
 | `finops-genai-capacity.md` | GenAI capacity models: provisioned vs shared, traffic shape, spillover, waste types, cross-provider comparison | ~225 |
@@ -139,4 +136,3 @@ premature - they risk committing to waste.
 
 ---
 
-> *FinOps Skill by [OptimNow](https://optimnow.io) - licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).*

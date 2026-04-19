@@ -35,7 +35,6 @@ cloud-finops-skills/
 │   ├── SKILL.md           <- Entry point + domain router
 │   ├── POWER.md           <- Kiro IDE entry point
 │   └── references/
-│       ├── optimnow-methodology.md
 │       ├── finops-for-ai.md
 │       ├── finops-ai-value-management.md
 │       ├── finops-genai-capacity.md

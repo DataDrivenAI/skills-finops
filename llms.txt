@@ -16,7 +16,6 @@ infrastructure. Copy the files into your agent's context and it gains FinOps exp
 - SKILL.md: Entry point and domain router for Claude Code and generic agents
 - POWER.md: Entry point for Kiro IDE
 - INSTALLATION.md: 6 setup options + model-agnostic response contract
-- references/optimnow-methodology.md: Reasoning philosophy (read first on every query)
 - references/finops-for-ai.md: AI cost management, token economics, agentic patterns
 - references/finops-ai-value-management.md: AI investment governance, stage gates
 - references/finops-genai-capacity.md: Provisioned vs shared capacity, cross-provider
